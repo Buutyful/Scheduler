@@ -2,53 +2,51 @@
 
 public abstract class SlotScheduler
 {
+    private static readonly TimeSpan DayLength = TimeSpan.FromHours(24);
     public int Interval { get; }
 
-    public SlotScheduler(int interval = 60)
+    protected SlotScheduler(int interval = 60)
     {
         if (interval <= 0)
             throw new ArgumentException("Interval must be positive", nameof(interval));
         if (60 % interval != 0)
             throw new ArgumentException("Interval must divide evenly into 60 minutes", nameof(interval));
-
         Interval = interval;
     }
+
     public virtual IReadOnlyDictionary<int, IReadOnlyList<AvailableTimeSlot>> TimeSlotsForTheDay()
     {
-        var timeSlots = new List<AvailableTimeSlot>();
-        var startTime = TimeSpan.Zero;
-
-        // Generate time slots until we reach or exceed 24 hours
-        while (startTime < TimeSpan.FromHours(24))
-        {
-            var endTime = startTime.Add(TimeSpan.FromMinutes(Interval));
-
-            if (endTime >= TimeSpan.FromHours(24))
-                endTime = TimeSpan.FromHours(24);
-
-            timeSlots.Add(new AvailableTimeSlot(startTime, endTime));
-
-            if (endTime == TimeSpan.FromHours(24)) break;
-            startTime = endTime;
-        }
-
+        var timeSlots = GenerateTimeSlots().ToList();
         return GroupSlotsByHour(timeSlots);
     }
 
-    private static IReadOnlyDictionary<int, IReadOnlyList<AvailableTimeSlot>> GroupSlotsByHour(
-    IEnumerable<AvailableTimeSlot> timeSlots)
+    private IEnumerable<AvailableTimeSlot> GenerateTimeSlots()
     {
-        var hourlySlots = new Dictionary<int, List<AvailableTimeSlot>>();
-        for (int hour = 0; hour < 24; hour++)
+        var startTime = TimeSpan.Zero;
+        while (startTime < DayLength)
         {
-            hourlySlots[hour] = new List<AvailableTimeSlot>();
+            var endTime = startTime.Add(TimeSpan.FromMinutes(Interval));
+            if (endTime >= DayLength)
+                endTime = DayLength;
+
+            yield return new AvailableTimeSlot(startTime, endTime);
+
+            if (endTime == DayLength)
+                yield break;
+
+            startTime = endTime;
         }
+    }
+
+    private static IReadOnlyDictionary<int, IReadOnlyList<AvailableTimeSlot>> GroupSlotsByHour(
+        IEnumerable<AvailableTimeSlot> timeSlots)
+    {
+        var hourlySlots = Enumerable.Range(0, 24)
+            .ToDictionary(hour => hour, _ => new List<AvailableTimeSlot>());
 
         foreach (var slot in timeSlots)
         {
-            
-            int hour = slot.StartTime.Hours;
-            hourlySlots[hour].Add(slot);
+            hourlySlots[slot.StartTime.Hours].Add(slot);
         }
 
         return hourlySlots.ToDictionary(
