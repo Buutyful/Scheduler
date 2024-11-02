@@ -43,29 +43,14 @@ public abstract class SlotScheduler
         {
             hourlySlots[hour] = new List<AvailableTimeSlot>();
         }
+
         foreach (var slot in timeSlots)
         {
-            int startHour = slot.StartTime.Hours;
-            int endHour = slot.EndTime.Hours == 0 && slot.EndTime == TimeSpan.FromHours(24)
-                ? 23  // Handle the case where EndTime is 24:00
-                : slot.EndTime.Hours;
-
-            if (slot.EndTime.Minutes == 0 && endHour > 0 && slot.EndTime != TimeSpan.FromHours(24))
-            {
-                endHour--;
-            }
-
-            for (int hour = startHour; hour <= endHour && hour < 24; hour++)
-            {
-                var hourStart = new TimeSpan(hour, 0, 0);
-                var hourEnd = new TimeSpan(hour, 59, 59);
-                if (slot.StartTime <= hourEnd &&
-                    (slot.EndTime > hourStart || slot.EndTime == TimeSpan.FromHours(24)))
-                {
-                    hourlySlots[hour].Add(slot);
-                }
-            }
+            
+            int hour = slot.StartTime.Hours;
+            hourlySlots[hour].Add(slot);
         }
+
         return hourlySlots.ToDictionary(
             kvp => kvp.Key,
             kvp => (IReadOnlyList<AvailableTimeSlot>)kvp.Value.AsReadOnly());
