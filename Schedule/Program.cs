@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Schedule.SchedulerService.Common;
+using Schedule.TimeSlots;
 
 Console.WriteLine("Hello, World!");
 

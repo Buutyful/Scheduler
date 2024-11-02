@@ -1,4 +1,6 @@
-﻿namespace Schedule.SchedulerService.Common;
+﻿using Schedule.TimeSlots;
+
+namespace Schedule.SchedulerService.Common;
 
 public abstract class SlotScheduler
 {

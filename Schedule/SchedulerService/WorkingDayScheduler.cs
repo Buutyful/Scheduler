@@ -1,4 +1,5 @@
 ﻿using Schedule.SchedulerService.Common;
+using Schedule.TimeSlots;
 
 namespace Schedule.SchedulerService;
 
@@ -26,7 +27,7 @@ public class WorkingDayScheduler : SlotScheduler
                 continue;
 
             var availableSlots = GetAvailableSlotsForHour(hourSlots);
-            if (availableSlots.Any())
+            if (availableSlots.Count != 0)
             {
                 workingHourSlots[hour] = availableSlots;
             }
