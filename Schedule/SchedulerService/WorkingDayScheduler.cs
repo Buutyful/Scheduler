@@ -1,5 +1,6 @@
 ﻿using Schedule.SchedulerService.Common;
 using Schedule.TimeSlots;
+using Schedule.TimeSlots.Common;
 
 namespace Schedule.SchedulerService;
 
@@ -12,10 +13,10 @@ public class WorkingDayScheduler : SlotScheduler
         WorkingDay = day ?? throw new ArgumentNullException(nameof(day));
     }
 
-    public override IReadOnlyDictionary<int, IReadOnlyList<AvailableTimeSlot>> TimeSlotsForTheDay()
+    public override IReadOnlyDictionary<int, List<TimeSlot>> TimeSlotsForTheSchedule()
     {
-        var allDaySlots = base.TimeSlotsForTheDay();
-        var workingHourSlots = new Dictionary<int, List<AvailableTimeSlot>>();
+        var allDaySlots = base.TimeSlotsForTheSchedule();
+        var workingHourSlots = new Dictionary<int, List<TimeSlot>>();
 
         int endHour = WorkingDay.EndTime == DayLength
             ? 23
@@ -33,14 +34,12 @@ public class WorkingDayScheduler : SlotScheduler
             }
         }
 
-        return workingHourSlots.ToDictionary(
-            kvp => kvp.Key,
-            kvp => (IReadOnlyList<AvailableTimeSlot>)kvp.Value.AsReadOnly());
+        return workingHourSlots.AsReadOnly();
     }
 
-    private List<AvailableTimeSlot> GetAvailableSlotsForHour(IReadOnlyList<AvailableTimeSlot> hourSlots)
+    private List<TimeSlot> GetAvailableSlotsForHour(List<TimeSlot> hourSlots)
     {
-        var availableSlots = new List<AvailableTimeSlot>();
+        var availableSlots = new List<TimeSlot>();
 
         foreach (var slot in hourSlots)
         {
@@ -57,10 +56,10 @@ public class WorkingDayScheduler : SlotScheduler
         return availableSlots;
     }
 
-    private bool IsSlotOutsideWorkingHours(AvailableTimeSlot slot) =>
+    private bool IsSlotOutsideWorkingHours(TimeSlot slot) =>
         slot.EndTime <= WorkingDay.StartTime || slot.StartTime >= WorkingDay.EndTime;
 
-    private AvailableTimeSlot AdjustSlotToWorkingHours(AvailableTimeSlot slot)
+    private TimeSlot AdjustSlotToWorkingHours(TimeSlot slot)
     {
         var adjustedStart = TimeSpan.FromTicks(Math.Max(slot.StartTime.Ticks, WorkingDay.StartTime.Ticks));
         var adjustedEnd = TimeSpan.FromTicks(Math.Min(slot.EndTime.Ticks, WorkingDay.EndTime.Ticks));

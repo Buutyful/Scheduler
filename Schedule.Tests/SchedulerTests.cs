@@ -30,11 +30,21 @@ public class SchedulerTests
     public void BasicSchedulerShouldCreateCorrectNumberOfSlots()
     {
         var scheduler = new TestSlotScheduler(30); // 30-minute intervals
-        var slots = scheduler.TimeSlotsForTheDay();
+        var slots = scheduler.TimeSlotsForTheSchedule();
 
         Assert.Equal(24, slots.Count); // Should have all 24 hours
         Assert.All(slots.Values, hourSlots =>
             Assert.Equal(2, hourSlots.Count)); // Each hour should have 2 30-minute slots
+    }
+
+    [Fact]
+    public void SchedulerShouldCreateOnlyAvailableSlots()
+    {
+        var scheduler = new TestSlotScheduler(30); // 30-minute intervals
+        var slots = scheduler.TimeSlotsForTheSchedule();
+        
+        Assert.All(slots.Values, 
+            hourSlots => hourSlots.ForEach(slot => Assert.IsType<AvailableTimeSlot>(slot))); // Each newly created slot should be available
     }
 
     [Theory]
@@ -50,7 +60,7 @@ public class SchedulerTests
         );
 
         var scheduler = new WorkingDayScheduler(workingDay, 60);
-        var slots = scheduler.TimeSlotsForTheDay();
+        var slots = scheduler.TimeSlotsForTheSchedule();
 
         // Verify no slots before start hour
         for (int hour = 0; hour < startHour; hour++)
@@ -93,7 +103,7 @@ public class SchedulerTests
         );
 
         var scheduler = new WorkingDayScheduler(workingDay, 30); // 30-minute intervals
-        var slots = scheduler.TimeSlotsForTheDay();
+        var slots = scheduler.TimeSlotsForTheSchedule();
 
         // Verify lunch hour is completely excluded
         Assert.False(slots.ContainsKey(12));
@@ -109,7 +119,7 @@ public class SchedulerTests
     public void SlotsShouldNotExtendBeyond24Hours()
     {
         var scheduler = new TestSlotScheduler(60);
-        var slots = scheduler.TimeSlotsForTheDay();
+        var slots = scheduler.TimeSlotsForTheSchedule();
 
         foreach (var hourSlots in slots.Values)
         {
@@ -130,7 +140,7 @@ public class SchedulerTests
         );
 
         var scheduler = new WorkingDayScheduler(workingDay, 15); // 15-minute intervals
-        var slots = scheduler.TimeSlotsForTheDay();
+        var slots = scheduler.TimeSlotsForTheSchedule();
 
         Assert.True(slots.ContainsKey(23));
         Assert.Equal(4, slots[23].Count); // Should have four 15-minute slots
@@ -165,7 +175,7 @@ public class SchedulerTests
         );
 
         var scheduler = new WorkingDayScheduler(workingDay, 30);
-        var slots = scheduler.TimeSlotsForTheDay();
+        var slots = scheduler.TimeSlotsForTheSchedule();
 
         // Verify that hours affected by overlapping pauses are handled correctly
         Assert.False(slots.ContainsKey(12));

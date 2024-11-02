@@ -1,8 +1,14 @@
 ﻿using Schedule.TimeSlots;
+using Schedule.TimeSlots.Common;
 
 namespace Schedule.SchedulerService.Common;
 
-public abstract class SlotScheduler
+public interface ISlotScheduler
+{
+    public IReadOnlyDictionary<int, List<TimeSlot>> TimeSlotsForTheSchedule();
+}
+
+public abstract class SlotScheduler : ISlotScheduler
 {
     protected static readonly TimeSpan DayLength = TimeSpan.FromHours(24);
     public int Interval { get; }
@@ -16,13 +22,13 @@ public abstract class SlotScheduler
         Interval = interval;
     }
 
-    public virtual IReadOnlyDictionary<int, IReadOnlyList<AvailableTimeSlot>> TimeSlotsForTheDay()
+    public virtual IReadOnlyDictionary<int, List<TimeSlot>> TimeSlotsForTheSchedule()
     {
         var timeSlots = GenerateTimeSlots().ToList();
-        return GroupSlotsByHour(timeSlots);
+        return GroupSlotsByHour(timeSlots).AsReadOnly();
     }
 
-    private IEnumerable<AvailableTimeSlot> GenerateTimeSlots()
+    private IEnumerable<TimeSlot> GenerateTimeSlots()
     {
         var startTime = TimeSpan.Zero;
         while (startTime < DayLength)
@@ -40,19 +46,17 @@ public abstract class SlotScheduler
         }
     }
 
-    private static IReadOnlyDictionary<int, IReadOnlyList<AvailableTimeSlot>> GroupSlotsByHour(
-        IEnumerable<AvailableTimeSlot> timeSlots)
+    private static Dictionary<int, List<TimeSlot>> GroupSlotsByHour(
+        IEnumerable<TimeSlot> timeSlots)
     {
         var hourlySlots = Enumerable.Range(0, 24)
-            .ToDictionary(hour => hour, _ => new List<AvailableTimeSlot>());
+            .ToDictionary(hour => hour, _ => new List<TimeSlot>());
 
         foreach (var slot in timeSlots)
         {
             hourlySlots[slot.StartTime.Hours].Add(slot);
         }
 
-        return hourlySlots.ToDictionary(
-            kvp => kvp.Key,
-            kvp => (IReadOnlyList<AvailableTimeSlot>)kvp.Value.AsReadOnly());
+        return hourlySlots;
     }
 }
