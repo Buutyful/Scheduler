@@ -17,7 +17,7 @@ public class WorkingDayScheduler : SlotScheduler
         var allDaySlots = base.TimeSlotsForTheDay();
         var workingHourSlots = new Dictionary<int, List<AvailableTimeSlot>>();
 
-        int endHour = WorkingDay.EndTime == TimeSpan.FromHours(24)
+        int endHour = WorkingDay.EndTime == DayLength
             ? 23
             : WorkingDay.EndTime.Hours;
 

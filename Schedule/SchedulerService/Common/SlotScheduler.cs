@@ -4,7 +4,7 @@ namespace Schedule.SchedulerService.Common;
 
 public abstract class SlotScheduler
 {
-    private static readonly TimeSpan DayLength = TimeSpan.FromHours(24);
+    protected static readonly TimeSpan DayLength = TimeSpan.FromHours(24);
     public int Interval { get; }
 
     protected SlotScheduler(int interval = 60)
