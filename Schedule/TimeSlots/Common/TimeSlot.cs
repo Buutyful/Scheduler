@@ -18,7 +18,7 @@ public abstract record TimeSlot : IComparer<TimeSlot>
 
         return StartTime < other.EndTime && EndTime > other.StartTime;
     }
-    public bool Contains(TimeSpan time) => StartTime <= time && EndTime >= time;
+    public bool Contains(TimeSpan time) => StartTime <= time && EndTime > time;
     public int Compare(TimeSlot? x, TimeSlot? y)
     {
         if (x == null || y == null)

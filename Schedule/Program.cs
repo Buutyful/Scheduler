@@ -9,35 +9,43 @@ Console.WriteLine("Hello, World!");
 
 
 
-public class Day(ISlotScheduler scheduler)
+public class DaySchedule(ISlotScheduler scheduler)
 {
     private readonly ISlotScheduler _slotScheduler = scheduler;
     private readonly IReadOnlyDictionary<int, List<TimeSlot>> _daySlots = scheduler.TimeSlotsForTheSchedule();
 
-
-    public ErrorOr<BookedTimeSlot> BookSlot(TimeSpan timeToBook, Guid userId)
+    public ErrorOr<BookedTimeSlot> TryBookSlot(TimeSpan timeToBook, Guid userId)
     {
-        if (!_daySlots.TryGetValue(timeToBook.Hours, out var slots) &&
-            slots!.OfType<AvailableTimeSlot>()
-            .Where(s => s.Contains(timeToBook)).Any())
+        if (!_daySlots.TryGetValue(timeToBook.Hours, out var slots))
         {
             return Error.Failure("no slots bookable at the given time");
         }
 
-        for (int i = 0; i < slots!.Count; i++)
-        {
-            if (slots[i] is not AvailableTimeSlot available) continue;
+        var availableSlot = slots.OfType<AvailableTimeSlot>()
+            .FirstOrDefault(s => s.Contains(timeToBook));
 
-            if (available.Contains(timeToBook))
-            {
-                var booked = new BookedTimeSlot(available, userId);
-                //here u can raise events
-                slots[i] = booked;
-                return booked;
-            }
+        if (availableSlot is null)
+        {
+            return Error.Failure("no slots bookable at the given time");
         }
-        return Error.Failure();
+
+        var index = slots.IndexOf(availableSlot);
+        var bookedSlot = TimeSlotMethods.BookTimeSlot(userId, availableSlot);
+
+        slots[index] = bookedSlot;
+
+        return bookedSlot;
     }
+    public IEnumerable<TimeSlot> GetSlotsByHour(int hour)
+    {
+        if (!_daySlots.TryGetValue(hour, out var slots))
+        {
+            return [];
+        }
+        return slots;
+    }
+    public IEnumerable<TimeSlot> GetAllAvailableSlots() => 
+        _daySlots.Values.SelectMany(slots => slots.OfType<AvailableTimeSlot>()).ToList();
 }
 
 
