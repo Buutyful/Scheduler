@@ -1,14 +1,8 @@
-﻿// See https://aka.ms/new-console-template for more information
-using ErrorOr;
-using Schedule.SchedulerService.Common;
+﻿using ErrorOr;
+using Schedule.SchedulerService;
 using Schedule.TimeSlots;
-using Schedule.TimeSlots.Common;
 
-Console.WriteLine("Hello, World!");
-
-
-
-
+Console.WriteLine("hello world");
 public class DaySchedule(ISlotScheduler scheduler)
 {
     private readonly ISlotScheduler _slotScheduler = scheduler;
@@ -49,13 +43,8 @@ public class DaySchedule(ISlotScheduler scheduler)
 }
 
 
-
-
-//add all kid of time slots u need, like prenotations and others
-
 public static class TimeSlotMethods
-{
-    //here u can inject services, loggers, raise domain events etc..
+{   
     public static BookedTimeSlot BookTimeSlot(Guid bookingUser, AvailableTimeSlot openSlot) =>
         new BookedTimeSlot(bookingUser, openSlot.StartTime, openSlot.EndTime);
     public static AvailableTimeSlot CancelBooking(Guid bookingUser, BookedTimeSlot openSlot) =>

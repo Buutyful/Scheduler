@@ -1,6 +1,4 @@
-﻿using Schedule.SchedulerService.Common;
-using Schedule.TimeSlots;
-using Schedule.TimeSlots.Common;
+﻿using Schedule.TimeSlots;
 
 namespace Schedule.SchedulerService;
 

@@ -1,7 +1,6 @@
 ﻿using Schedule.TimeSlots;
-using Schedule.TimeSlots.Common;
 
-namespace Schedule.SchedulerService.Common;
+namespace Schedule.SchedulerService;
 
 public interface ISlotScheduler
 {
@@ -59,4 +58,8 @@ public abstract class SlotScheduler : ISlotScheduler
 
         return hourlySlots;
     }
+}
+
+public class FullDayScheduler(int interval) : SlotScheduler(interval)
+{
 }

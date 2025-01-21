@@ -1,7 +1,5 @@
 ﻿using Schedule.SchedulerService;
-using Schedule.SchedulerService.Common;
 using Schedule.TimeSlots;
-using Schedule.TimeSlots.Common;
 
 namespace Schedule.Tests;
 
